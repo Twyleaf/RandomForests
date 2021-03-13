@@ -38,7 +38,7 @@ class DecisionTree():
         father.children.append( [child, transition] )
 
     def datasetHasOnlyOneClass(dataset, targetLabel):
-        if len(df[label_column].unique()) == 1: 
+        if len(dataset[targetLabel].unique()) == 1: 
             return True
         else:
             return False
@@ -62,25 +62,25 @@ class DecisionTree():
         infoA = [] # Inicializa lista de entropia para cada atributo: (nome do atributo, entropia)
 
         attributesValues = [] # Lista de tuplas do tipo: (nome do atributo, lista de valores possíveis para o atributo)
-        s = {} # Dicionário que irá guardar os subconjuntos de cada valor possível de cada atributo
+        dict = {} # Dicionário que irá guardar os subconjuntos de cada valor possível de cada atributo
 
         for attribute in predictiveAttributes:
             s = dataset[attribute].unique() # Pega os valores únicos de cada coluna
             l = s.tolist()
 
             attributesValues.append((attribute, l)) # Salva uma tupla com nome do atributo e uma lista dos valores possíveis
-            s[attribute] = [] # Inicializa para fazer os cálculos de acordo com cada valor de cada atributo
+            dict[attribute] = [] # Inicializa para fazer os cálculos de acordo com cada valor de cada atributo
 
         for tuple in attributesValues:
             attributeName = tuple[0]
 
             for value in tuple[1]: # Para cada valor na lista da tupla
                 d = dataset[dataset[attributeName] == value] # Subconjunto do atributo com todas as instâncias com tal valor 
-                s[attributeName].append(d) # Salva o subconjunto
+                dict[attributeName].append(d) # Salva o subconjunto
 
         for attribute in predictiveAttributes:
             sum = 0
-            subsets = s[attribute]
+            subsets = dict[attribute]
 
             for subset in subsets:
                 proportion = subset.shape[0] / D
