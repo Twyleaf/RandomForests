@@ -10,21 +10,24 @@ Node = namedtuple('Node', ['label', 'children'])
 class DecisionTree():
 
     def train(self, dataset, predictiveAttributes, targetLabel):
-        if self.datasetHasOnlyOneClass(dataset):# Se o dataset tiver apenas uma classe, criar um nó folha que prediz essa classe
-            node = self.newNode(dataframe[targetLabel].iloc[0]) 
+        if self.datasetHasOnlyOneClass(dataset, targetLabel):# Se o dataset tiver apenas uma classe, criar um nó folha que prediz essa classe
+            node = self.newNode(dataset[targetLabel].iloc[0])
             return node
         if len(predictiveAttributes) == 0:# Se atributos estiver vazio, retornar nodo com classe mais frequente
-            node = self._new_node(dataframe[targetLabel].mode()[0])
+            node = self.newNode(self.getMostFrequentClass(dataset, targetLabel))
             return node
-        chosenAttribute = chooseAttribute(dataset, predictiveAttributes, targetLabel)# Escolher atributo com o método de ganho de informação
+        chosenAttribute = self.chooseAttribute(dataset, predictiveAttributes, targetLabel)# Escolher atributo com o método de ganho de informação
         node = self.newNode(chosenAttribute)# Criar um nodo com esse atributo
-        predictiveAttributes.remove(chosenAttribute)# remover atributo escolhido da lista
-        for distinctValue, newDataset in self.groupDatasetByAttribute(dataset, chosenAttribute):#Para cada valor distinto do atributo no dataset
-            if len(newDataset.index) == 0:# Se classe estiver vazia para esse valor
-                node = self.newNode(getMostFrequentClass(dataset))# Retornar nodo com classe mais frequente para o dataset
+        predictiveAttributes.remove(chosenAttribute)# Remover atributo escolhido da lista
+        subsets = self.groupDatasetByAttributeValues(dataset, chosenAttribute)# Divide o dataset de acordo com cada valor diferente do atributo
+        for subset in subsets:
+            distinctValue = subset[0] # O valor distinto usado na divisão do dataset
+            newDataset = subset[1] # O dataset dividido
+            if newDataset.shape == 0:# Se subconjunto estiver vazio
+                node = self.newNode(self.getMostFrequentClass(dataset, targetLabel))# Retornar nodo com classe mais frequente para o dataset
                 return node
             else:
-                #Criar um novo nodo e fazer uma chamada recursiva com o dataset dividido
+                # Criar um novo nodo e fazer uma chamada recursiva com o dataset dividido
                 self.addChildren(father = node,
                                 child = self.train(newDataset, predictiveAttributes.copy(), targetLabel),
                                 transition = distinctValue)
@@ -37,14 +40,14 @@ class DecisionTree():
     def addChildren(self, father=None, child=None, transition=None):
         father.children.append( [child, transition] )
 
-    def datasetHasOnlyOneClass(dataset, targetLabel):
+    def datasetHasOnlyOneClass(self, dataset, targetLabel):
         if len(dataset[targetLabel].unique()) == 1: 
             return True
         else:
             return False
 
 
-    def entropy(dataset, targetLabel):
+    def entropy(self, dataset, targetLabel):
         s = dataset[targetLabel].value_counts(normalize=True) # Calcula as probabilidades de acordo com os valores alvos
         p = s.tolist()
 
@@ -56,7 +59,7 @@ class DecisionTree():
 
         return -sum
 
-    def calculateAttributesEntropy(dataset, predictiveAttributes, targetLabel):
+    def calculateAttributesEntropy(self, dataset, predictiveAttributes, targetLabel):
         D = dataset.shape[0] # Número de linhas ou instâncias
 
         infoA = [] # Inicializa lista de entropia para cada atributo: (nome do atributo, entropia)
@@ -84,14 +87,14 @@ class DecisionTree():
 
             for subset in subsets:
                 proportion = subset.shape[0] / D
-                sum = sum + (proportion * entropy(subset, targetLabel)) # Faz o cálculo da entropia restrito aos subconjuntos
+                sum = sum + (proportion * self.entropy(subset, targetLabel)) # Faz o cálculo da entropia restrito aos subconjuntos
 
             infoA.append((attribute, sum)) # Salva o valor do cálculo com nome do atributo
 
         return infoA
 
-    def informationGain(dataset, infoA):
-        infoD = entropy(dataset) # Entropia do dataset original
+    def informationGain(self, dataset, infoA, targetLabel):
+        infoD = self.entropy(dataset, targetLabel) # Entropia do dataset original
         infoGain = [] # Inicializa lista para calcular a diferença: (nome do atributo, diferença de entropias)
 
         for tuple in infoA:
@@ -101,14 +104,62 @@ class DecisionTree():
 
         return infoGain
 
-    def chooseAttribute(dataset, predictiveAttributes, targetLabel):
-        infoA = calculateAttributesEntropy(dataset, predictiveAttributes, targetLabel)
-        infoGain = informationGain(dataset, infoA)
+    def chooseAttribute(self, dataset, predictiveAttributes, targetLabel):
+        infoA = self.calculateAttributesEntropy(dataset, predictiveAttributes, targetLabel)
+        infoGain = self.informationGain(dataset, infoA, targetLabel)
         chosenTuple = max(infoGain, key = lambda t: t[1])
         chosenAttribute = chosenTuple[0]
 
+        print("Information gain: " + str(chosenTuple[1]) + ", " + chosenTuple[0])
+
         return chosenAttribute
 
+    def groupDatasetByAttributeValues(self, dataset, chosenAttribute):
+        s = dataset[chosenAttribute].unique() # Pega os valores únicos de cada coluna
+        attributeValues = s.tolist()
+        subsets = [] # Salva lista de tuplas: (valor, dataset)
 
-tr = DecisionTree()
-model = tr.train()
+        for value in attributeValues: # Cria um subconjunto para cada valor
+            subset = dataset[dataset[chosenAttribute] == value]
+            subsets.append((value, subset))
+
+        return subsets
+
+    def getMostFrequentClass(self, dataset, targetLabel):
+        mostFrequent = dataset[targetLabel].value_counts().idxmax()
+
+        return mostFrequent
+
+
+
+
+DT0 = DecisionTree()
+DT0Dataset = pd.read_csv("data\dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
+DT0Predictive = list(DT0Dataset.columns)
+DT0Predictive.remove("Joga")
+DT0Target = "Joga"
+
+DT0.train(DT0Dataset, DT0Predictive, DT0Target)
+
+"""
+DT1 = DecisionTree()
+DT1Dataset = pd.read_csv("data\house-votes-84.tsv", sep='\t')
+DT1Predictive = list(DT1Dataset.columns)
+DT1Predictive.remove("target")
+DT1Target = "target"
+
+a = DT1.chooseAttribute(DT1Dataset, DT1Predictive, DT1Target)
+print(a)
+"""
+
+"""
+DT2 = DecisionTree()
+DT2Dataset = pd.read_csv("data\wine-recognition.tsv", sep='\t')
+DT2Predictive = list(DT2Dataset.columns)
+DT2Predictive.remove("target")
+DT2Target = "target"
+
+a = DT2.chooseAttribute(DT2Dataset, DT2Predictive, DT2Target)
+print(a)
+"""
+
