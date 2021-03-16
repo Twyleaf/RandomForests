@@ -115,15 +115,23 @@ class DecisionTree():
         return chosenAttribute
 
     def groupDatasetByAttributeValues(self, dataset, chosenAttribute):
-        s = dataset[chosenAttribute].unique() # Pega os valores únicos de cada coluna
-        attributeValues = s.tolist()
-        subsets = [] # Salva lista de tuplas: (valor, dataset)
+        if pd.api.types.is_numeric_dtype(dataset[chosenAttribute]):# testa se o atrubuto é numérico
+            mean = dataset[chosenAttribute].mean() # se for numérico, calcula a média dos valores
+            subsets = [
+                ("< " + str(mean), dataset.loc[dataset[chosenAttribute] < mean]),# divide em dois subsets, para valores maiores ou menores que a média
+                (">= " + str(mean), dataset.loc[dataset[chosenAttribute] >= mean]),
+            ]
+            return subsets
+        else:# para atributos não numéricos
+            s = dataset[chosenAttribute].unique() # Pega os valores únicos de cada coluna
+            attributeValues = s.tolist()
+            subsets = [] # Salva lista de tuplas: (valor, dataset)
 
-        for value in attributeValues: # Cria um subconjunto para cada valor
-            subset = dataset[dataset[chosenAttribute] == value]
-            subsets.append((value, subset))
+            for value in attributeValues: # Cria um subconjunto para cada valor
+                subset = dataset[dataset[chosenAttribute] == value]
+                subsets.append((value, subset))
 
-        return subsets
+            return subsets
 
     def getMostFrequentClass(self, dataset, targetLabel):
         mostFrequent = dataset[targetLabel].value_counts().idxmax()
@@ -131,10 +139,13 @@ class DecisionTree():
         return mostFrequent
 
     def stringNode(self, node, level=0):
-        ret = "\t"*level+ node.label+"\n"
+        if node.children:
+            ret = "\t"*level+ "atributo " + str(node.label)+"\n"
+        else:
+            ret = "\t"*level+ "classe " + str(node.label)+"\n"
         for child in node.children:
             ##print(child)
-            ret += "\t"*(level+1) +"caso " +child[1]+":\n"
+            ret += "\t"*(level+1) +"caso " +str(child[1])+":\n"
             ret += self.stringNode(child[0],level+2)
         return ret
 
@@ -161,15 +172,13 @@ DT1Target = "target"
 a = DT1.chooseAttribute(DT1Dataset, DT1Predictive, DT1Target)
 print(a)
 """
-
 """
 DT2 = DecisionTree()
-DT2Dataset = pd.read_csv("data\wine-recognition.tsv", sep='\t')
+DT2Dataset = pd.read_csv("data/wine-recognition.tsv", sep='\t')
 DT2Predictive = list(DT2Dataset.columns)
 DT2Predictive.remove("target")
 DT2Target = "target"
 
-a = DT2.chooseAttribute(DT2Dataset, DT2Predictive, DT2Target)
-print(a)
+DT2.printNode(DT2.train(DT2Dataset, DT2Predictive, DT2Target))
+##print(a)
 """
-
