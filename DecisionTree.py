@@ -130,16 +130,26 @@ class DecisionTree():
 
         return mostFrequent
 
+    def stringNode(self, node, level=0):
+        ret = "\t"*level+ node.label+"\n"
+        for child in node.children:
+            ##print(child)
+            ret += "\t"*(level+1) +"caso " +child[1]+":\n"
+            ret += self.stringNode(child[0],level+2)
+        return ret
+
+    def printNode(self, node):
+        print(self.stringNode(node,0))
 
 
 
 DT0 = DecisionTree()
-DT0Dataset = pd.read_csv("data\dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
+DT0Dataset = pd.read_csv("data/dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
 DT0Predictive = list(DT0Dataset.columns)
 DT0Predictive.remove("Joga")
 DT0Target = "Joga"
 
-DT0.train(DT0Dataset, DT0Predictive, DT0Target)
+DT0.printNode(DT0.train(DT0Dataset, DT0Predictive, DT0Target))
 
 """
 DT1 = DecisionTree()
