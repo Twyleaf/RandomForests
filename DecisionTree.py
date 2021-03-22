@@ -9,14 +9,20 @@ Node = namedtuple('Node', ['label', 'children'])
 
 class DecisionTree():
 
-    def train(self, dataset, predictiveAttributes, targetLabel):
+    def train(self, dataset, predictiveAttributes, targetLabel, varyTree = False):
         if self.datasetHasOnlyOneClass(dataset, targetLabel):# Se o dataset tiver apenas uma classe, criar um nó folha que prediz essa classe
             node = self.newNode(dataset[targetLabel].iloc[0])
             return node
         if len(predictiveAttributes) == 0:# Se atributos estiver vazio, retornar nodo com classe mais frequente
             node = self.newNode(self.getMostFrequentClass(dataset, targetLabel))
             return node
-        chosenAttribute = self.chooseAttribute(dataset, predictiveAttributes, targetLabel)# Escolher atributo com o método de ganho de informação
+        if varyTree: #testa se a árvore deve variar de execução a execução
+            mAttibutes = random.sample(predictiveAttributes, math.ceil(math.sqrt(len(predictiveAttributes))))
+            #se sim, selecionar m atributos entre os atributos preditivos
+            #m é a raíz quadrada do número de atributos
+        else:
+            mAttibutes = predictiveAttributes# se não, não selecionar atributos
+        chosenAttribute = self.chooseAttribute(dataset, mAttibutes, targetLabel)# Escolher atributo com o método de ganho de informação
         node = self.newNode(chosenAttribute)# Criar um nodo com esse atributo
         predictiveAttributes.remove(chosenAttribute)# Remover atributo escolhido da lista
         subsets = self.groupDatasetByAttributeValues(dataset, chosenAttribute)# Divide o dataset de acordo com cada valor diferente do atributo
@@ -110,7 +116,7 @@ class DecisionTree():
         chosenTuple = max(infoGain, key = lambda t: t[1])
         chosenAttribute = chosenTuple[0]
 
-        print("Information gain: " + str(chosenTuple[1]) + ", " + chosenTuple[0])
+        #print("Information gain: " + str(chosenTuple[1]) + ", " + chosenTuple[0])
 
         return chosenAttribute
 
@@ -118,7 +124,7 @@ class DecisionTree():
         if pd.api.types.is_numeric_dtype(dataset[chosenAttribute]):# testa se o atrubuto é numérico
             mean = dataset[chosenAttribute].mean() # se for numérico, calcula a média dos valores
             subsets = [
-                ("< " + str(mean), dataset.loc[dataset[chosenAttribute] < mean]),# divide em dois subsets, para valores maiores ou menores que a média
+                ("<" + str(mean), dataset.loc[dataset[chosenAttribute] < mean]),# divide em dois subsets, para valores maiores ou menores que a média
                 (">= " + str(mean), dataset.loc[dataset[chosenAttribute] >= mean]),
             ]
             return subsets
@@ -153,15 +159,15 @@ class DecisionTree():
         print(self.stringNode(node,0))
 
 
-
+"""
 DT0 = DecisionTree()
 DT0Dataset = pd.read_csv("data/dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
 DT0Predictive = list(DT0Dataset.columns)
 DT0Predictive.remove("Joga")
 DT0Target = "Joga"
 
-DT0.printNode(DT0.train(DT0Dataset, DT0Predictive, DT0Target))
-
+DT0.printNode(DT0.train(DT0Dataset, DT0Predictive, DT0Target,True))
+"""
 """
 DT1 = DecisionTree()
 DT1Dataset = pd.read_csv("data\house-votes-84.tsv", sep='\t')
