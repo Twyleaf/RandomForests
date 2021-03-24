@@ -37,6 +37,8 @@ class DecisionTree():
                 self.addChildren(father = node,
                                 child = self.train(newDataset, predictiveAttributes.copy(), targetLabel),
                                 transition = distinctValue)
+        
+        self.treeRoot = node
         return node
 
 
@@ -125,7 +127,7 @@ class DecisionTree():
             mean = dataset[chosenAttribute].mean() # se for numérico, calcula a média dos valores
             subsets = [
                 ("<" + str(mean), dataset.loc[dataset[chosenAttribute] < mean]),# divide em dois subsets, para valores maiores ou menores que a média
-                (">= " + str(mean), dataset.loc[dataset[chosenAttribute] >= mean]),
+                (">=" + str(mean), dataset.loc[dataset[chosenAttribute] >= mean]),
             ]
             return subsets
         else:# para atributos não numéricos
@@ -155,8 +157,37 @@ class DecisionTree():
             ret += self.stringNode(child[0],level+2)
         return ret
 
-    def printNode(self, node):
-        print(self.stringNode(node,0))
+    def printTree(self):
+        print(self.stringNode(self.treeRoot,0))
+
+
+    def predictFromTrainingSet(self, dataset):
+        prediction = []
+        n = len(dataset)
+
+        for i in range(n):
+            newDataset = dataset.iloc[[i]]
+            #print(newDataset)
+            self.predict(self.treeRoot, newDataset, prediction)
+
+        return prediction
+
+    def predict(self, node, dataset, prediction):
+        if node.children:
+            for child in node.children:
+                ans = None
+
+                if child[1][0] == '<':
+                    ans = dataset[dataset[str(node.label)] < float(child[1][1:])]
+                elif child[1][0] == '>':
+                    ans = dataset[dataset[str(node.label)] >= float(child[1][2:])]
+                else:
+                    ans = dataset[dataset[str(node.label)] == child[1]]
+
+                if len(ans) > 0:
+                    self.predict(child[0], dataset, prediction)
+        else:
+            prediction.append(node.label)
 
 
 """
@@ -166,7 +197,10 @@ DT0Predictive = list(DT0Dataset.columns)
 DT0Predictive.remove("Joga")
 DT0Target = "Joga"
 
-DT0.printNode(DT0.train(DT0Dataset, DT0Predictive, DT0Target,True))
+DT0.train(DT0Dataset, DT0Predictive, DT0Target,True)
+DT0.printTree()
+prediction = DT0.predictFromTrainingSet(DT0Dataset)
+print(prediction)
 """
 """
 DT1 = DecisionTree()

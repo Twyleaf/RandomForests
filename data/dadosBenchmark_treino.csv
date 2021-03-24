@@ -1,0 +1,10 @@
+Tempo;Temperatura;Umidade;Ventoso;Joga
+Chuvoso;Fria;Normal;Verdadeiro;Nao
+Nublado;Fria;Normal;Verdadeiro;Sim
+Ensolarado;Amena;Alta;Falso;Nao
+Ensolarado;Fria;Normal;Falso;Sim
+Chuvoso;Amena;Normal;Falso;Sim
+Ensolarado;Amena;Normal;Verdadeiro;Sim
+Nublado;Amena;Alta;Verdadeiro;Sim
+Nublado;Quente;Normal;Falso;Sim
+Chuvoso;Amena;Alta;Verdadeiro;Nao
