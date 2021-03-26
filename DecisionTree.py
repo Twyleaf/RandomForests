@@ -5,24 +5,16 @@ import pandas as pd
 
 Node = namedtuple('Node', ['label', 'children'])
 
-
-
 class DecisionTree():
 
-    def train(self, dataset, predictiveAttributes, targetLabel, varyTree = False):
+    def train(self, dataset, predictiveAttributes, targetLabel):
         if self.datasetHasOnlyOneClass(dataset, targetLabel):# Se o dataset tiver apenas uma classe, criar um nó folha que prediz essa classe
             node = self.newNode(dataset[targetLabel].iloc[0])
             return node
         if len(predictiveAttributes) == 0:# Se atributos estiver vazio, retornar nodo com classe mais frequente
             node = self.newNode(self.getMostFrequentClass(dataset, targetLabel))
             return node
-        if varyTree: #testa se a árvore deve variar de execução a execução
-            mAttibutes = random.sample(predictiveAttributes, math.ceil(math.sqrt(len(predictiveAttributes))))
-            #se sim, selecionar m atributos entre os atributos preditivos
-            #m é a raíz quadrada do número de atributos
-        else:
-            mAttibutes = predictiveAttributes# se não, não selecionar atributos
-        chosenAttribute = self.chooseAttribute(dataset, mAttibutes, targetLabel)# Escolher atributo com o método de ganho de informação
+        chosenAttribute = self.chooseAttribute(dataset, predictiveAttributes, targetLabel)# Escolher atributo com o método de ganho de informação
         node = self.newNode(chosenAttribute)# Criar um nodo com esse atributo
         predictiveAttributes.remove(chosenAttribute)# Remover atributo escolhido da lista
         subsets = self.groupDatasetByAttributeValues(dataset, chosenAttribute)# Divide o dataset de acordo com cada valor diferente do atributo
@@ -37,8 +29,6 @@ class DecisionTree():
                 self.addChildren(father = node,
                                 child = self.train(newDataset, predictiveAttributes.copy(), targetLabel),
                                 transition = distinctValue)
-        
-        self.treeRoot = node
         return node
 
 
@@ -118,107 +108,65 @@ class DecisionTree():
         chosenTuple = max(infoGain, key = lambda t: t[1])
         chosenAttribute = chosenTuple[0]
 
-        #print("Information gain: " + str(chosenTuple[1]) + ", " + chosenTuple[0])
+        print("Information gain: " + str(chosenTuple[1]) + ", " + chosenTuple[0])
 
         return chosenAttribute
 
     def groupDatasetByAttributeValues(self, dataset, chosenAttribute):
-        if pd.api.types.is_numeric_dtype(dataset[chosenAttribute]):# testa se o atrubuto é numérico
-            mean = dataset[chosenAttribute].mean() # se for numérico, calcula a média dos valores
-            subsets = [
-                ("<" + str(mean), dataset.loc[dataset[chosenAttribute] < mean]),# divide em dois subsets, para valores maiores ou menores que a média
-                (">=" + str(mean), dataset.loc[dataset[chosenAttribute] >= mean]),
-            ]
-            return subsets
-        else:# para atributos não numéricos
-            s = dataset[chosenAttribute].unique() # Pega os valores únicos de cada coluna
-            attributeValues = s.tolist()
-            subsets = [] # Salva lista de tuplas: (valor, dataset)
+        s = dataset[chosenAttribute].unique() # Pega os valores únicos de cada coluna
+        attributeValues = s.tolist()
+        subsets = [] # Salva lista de tuplas: (valor, dataset)
 
-            for value in attributeValues: # Cria um subconjunto para cada valor
-                subset = dataset[dataset[chosenAttribute] == value]
-                subsets.append((value, subset))
+        for value in attributeValues: # Cria um subconjunto para cada valor
+            subset = dataset[dataset[chosenAttribute] == value]
+            subsets.append((value, subset))
 
-            return subsets
+        return subsets
 
     def getMostFrequentClass(self, dataset, targetLabel):
         mostFrequent = dataset[targetLabel].value_counts().idxmax()
 
         return mostFrequent
 
-    def stringNode(self, node, level=0):
-        if node.children:
-            ret = "\t"*level+ "atributo " + str(node.label)+"\n"
-        else:
-            ret = "\t"*level+ "classe " + str(node.label)+"\n"
-        for child in node.children:
-            ##print(child)
-            ret += "\t"*(level+1) +"caso " +str(child[1])+":\n"
-            ret += self.stringNode(child[0],level+2)
-        return ret
+    def printTree(self, node, index):
+        
+        if(index == 1):
+            print('\n\tTree:')
 
-    def printTree(self):
-        print(self.stringNode(self.treeRoot,0))
+        for i in range(0, index):
+            print('\t', end='')
+        for i in range(0, index):
+            print('-', end='')
 
+        print(node[0])
 
-    def predictFromTrainingSet(self, dataset):
-        prediction = []
-        n = len(dataset)
-
-        for i in range(n):
-            newDataset = dataset.iloc[[i]]
-            #print(newDataset)
-            self.predict(self.treeRoot, newDataset, prediction)
-
-        return prediction
-
-    def predict(self, node, dataset, prediction):
-        if node.children:
-            for child in node.children:
-                ans = None
-
-                if child[1][0] == '<':
-                    ans = dataset[dataset[str(node.label)] < float(child[1][1:])]
-                elif child[1][0] == '>':
-                    ans = dataset[dataset[str(node.label)] >= float(child[1][2:])]
-                else:
-                    ans = dataset[dataset[str(node.label)] == child[1]]
-
-                if len(ans) > 0:
-                    self.predict(child[0], dataset, prediction)
-        else:
-            prediction.append(node.label)
+        if(len(node[1]) > 0):
+            self.printTree(node[1][0][0], index + 1)
+            self.printTree(node[1][1][0], index + 1)
 
 
-"""
-DT0 = DecisionTree()
-DT0Dataset = pd.read_csv("data/dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
-DT0Predictive = list(DT0Dataset.columns)
-DT0Predictive.remove("Joga")
-DT0Target = "Joga"
 
-DT0.train(DT0Dataset, DT0Predictive, DT0Target,True)
-DT0.printTree()
-prediction = DT0.predictFromTrainingSet(DT0Dataset)
-print(prediction)
-"""
-"""
-DT1 = DecisionTree()
-DT1Dataset = pd.read_csv("data\house-votes-84.tsv", sep='\t')
-DT1Predictive = list(DT1Dataset.columns)
-DT1Predictive.remove("target")
-DT1Target = "target"
+# DT0 = DecisionTree()
+# DT0Dataset = pd.read_csv("data/dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
+# DT0Predictive = list(DT0Dataset.columns)
+# DT0Predictive.remove("Joga")
+# DT0Target = "Joga"
+# root = DT0.train(DT0Dataset, DT0Predictive, DT0Target)
+# DTO.printTree(root, 1)
 
-a = DT1.chooseAttribute(DT1Dataset, DT1Predictive, DT1Target)
-print(a)
-"""
-"""
-DT2 = DecisionTree()
-DT2Dataset = pd.read_csv("data/wine-recognition.tsv", sep='\t')
-DT2Predictive = list(DT2Dataset.columns)
-DT2Predictive.remove("target")
-DT2Target = "target"
+# DT1 = DecisionTree()
+# DT1Dataset = pd.read_csv("data/house-votes-84.tsv", sep='\t')
+# DT1Predictive = list(DT1Dataset.columns)
+# DT1Predictive.remove("target")
+# DT1Target = "target"
+# root = DT1.train(DT1Dataset, DT1Predictive, DT1Target)
+# DT1.printTree(root, 1)
 
-DT2.printNode(DT2.train(DT2Dataset, DT2Predictive, DT2Target))
-##print(a)
-"""
+# DT2 = DecisionTree()
+# DT2Dataset = pd.read_csv("data/wine-recognition.tsv", sep='\t')
+# DT2Predictive = list(DT2Dataset.columns)
+# DT2Predictive.remove("target")
+# DT2Target = "target"
+# root = DT2.train(DT2Dataset, DT2Predictive, DT2Target)
+# DT2.printTree(root, 1)
+
