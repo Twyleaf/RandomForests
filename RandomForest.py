@@ -9,8 +9,8 @@ class RandomForest():
         for treeIndex in range(numberOfTrees):
             bootstrap = self.getBootstrap(dataset, bootstrapSize)
             decisionTree = DecisionTree()
-            root = decisionTree.train(dataset, predictiveAttributes.copy(), targetLabel)
-            decisionTree.printTree(root, 1)
+            decisionTree.train(dataset, predictiveAttributes.copy(), targetLabel, True)
+            ##decisionTree.printTree()
             listOfTrees.append(decisionTree)
 
         return listOfTrees
@@ -64,7 +64,7 @@ RFDatasetTest = pd.read_csv("data/dadosBenchmark_teste.csv", sep=';')
 RFPredictive = list(RFDataset.columns)
 RFPredictive.remove("Joga")
 RFTarget = "Joga"
-listOfTrees = RF.train(RFDataset, RFPredictive, RFTarget, 10, len(RFDataset))
+listOfTrees = RF.train(RFDataset,RFPredictive,RFTarget,10,len(RFDataset))
 listOfPredictions = RF.predict(listOfTrees, RFDatasetTest)
 RF.voting(listOfPredictions, RFDatasetTest)
 
