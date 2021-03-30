@@ -125,12 +125,20 @@ class DecisionTree():
     def groupDatasetByAttributeValues(self, dataset, chosenAttribute):
         if pd.api.types.is_numeric_dtype(dataset[chosenAttribute]):# testa se o atrubuto é numérico
             mean = dataset[chosenAttribute].mean() # se for numérico, calcula a média dos valores
-            subsets = [
-                ("<" + str(mean), dataset.loc[dataset[chosenAttribute] < mean]),# divide em dois subsets, para valores maiores ou menores que a média
-                (">=" + str(mean), dataset.loc[dataset[chosenAttribute] >= mean]),
-            ]
+            subsets = []
+
+            lt = dataset[dataset[chosenAttribute] < mean]
+            gte = dataset[dataset[chosenAttribute] >= mean]
+
+            if len(lt) > 0:
+                subsets.append(("<" + str(mean), lt))
+
+            if len(gte) > 0:
+                subsets.append((">=" + str(mean), gte))
+
             return subsets
         else:# para atributos não numéricos
+            # dá erro com o dataset dos votos
             s = dataset[chosenAttribute].unique() # Pega os valores únicos de cada coluna
             attributeValues = s.tolist()
             subsets = [] # Salva lista de tuplas: (valor, dataset)
@@ -177,9 +185,9 @@ class DecisionTree():
             for child in node.children:
                 ans = None
 
-                if child[1][0] == '<':
+                if isinstance(child[1], str) and child[1][0] == '<':
                     ans = dataset[dataset[str(node.label)] < float(child[1][1:])]
-                elif child[1][0] == '>':
+                elif isinstance(child[1], str) and child[1][0] == '>':
                     ans = dataset[dataset[str(node.label)] >= float(child[1][2:])]
                 else:
                     ans = dataset[dataset[str(node.label)] == child[1]]
