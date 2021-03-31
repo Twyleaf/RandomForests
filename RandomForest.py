@@ -48,14 +48,16 @@ def kFoldSplit(k, dataset, targetLabel):
 
 class RandomForest():
 
-    def train(self, dataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize):
+    def train(self, dataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree):
         listOfTrees = [] #inicializa lista de árvores
         for treeIndex in range(numberOfTrees):
             bootstrap = self.getBootstrap(dataset, bootstrapSize)
             decisionTree = DecisionTree()
-            decisionTree.train(dataset, predictiveAttributes.copy(), targetLabel, True)
-            #decisionTree.printTree()
+            decisionTree.train(dataset, predictiveAttributes.copy(), targetLabel, varyTree)
             listOfTrees.append(decisionTree)
+
+            if(shouldPrintTree):
+                decisionTree.printTree()
 
         return listOfTrees
 
@@ -85,8 +87,7 @@ class RandomForest():
 
         #predictionDataset["voting"] = votingResultsList
         testDataset["voting"] = votingResultsList
-
-        #print("Final prediction is", votingResultsList)
+        print("Final prediction is", votingResultsList)
 
         return testDataset
 
@@ -96,7 +97,7 @@ class RandomForest():
 
         return 1 - err
 
-    def crossValidation(self, k, folds, predictiveAttributes, targetLabel, numberOfTrees):
+    def crossValidation(self, k, folds, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree):
         for i in range(k): # Cada fold deverá ser de teste
             testingDataset = folds[i]
             trainingFolds = []
@@ -107,13 +108,11 @@ class RandomForest():
 
             trainingDataset = combineDatasets(trainingFolds)
             
-            listOfTrees = self.train(trainingDataset, predictiveAttributes, targetLabel, numberOfTrees, len(trainingDataset))
+            listOfTrees = self.train(trainingDataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree)
             listOfPredictions = self.predict(listOfTrees, testingDataset)
             self.voting(listOfPredictions, testingDataset)
             print("ACCURACY #" + str(i + 1) + " is " + str(self.calculateAccuracy(targetLabel, testingDataset)))
 
-
-random.seed(20)
 
 """
 RF = RandomForest()
@@ -128,16 +127,16 @@ listOfPredictions = RF.predict(listOfTrees, RFDatasetTest)
 RF.voting(listOfPredictions, RFDatasetTest)
 """
 
-RF = RandomForest()
-RFDataset = pd.read_csv("data/house-votes-84.tsv", sep='\t')
-RFPredictive = list(RFDataset.columns)
-RFPredictive.remove("target")
-RFTarget = "target"
+# RF = RandomForest()
+# RFDataset = pd.read_csv("data/house-votes-84.tsv", sep='\t')
+# RFPredictive = list(RFDataset.columns)
+# RFPredictive.remove("target")
+# RFTarget = "target"
 
-k = 10
-nTree = 10
-folds = kFoldSplit(k, RFDataset, RFTarget)
-RF.crossValidation(k, folds, RFPredictive, RFTarget, nTree)
+# k = 10
+# nTree = 10
+# folds = kFoldSplit(k, RFDataset, RFTarget)
+# RF.crossValidation(k, folds, RFPredictive, RFTarget, nTree)
 
 """
 RF = RandomForest()

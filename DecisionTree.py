@@ -5,8 +5,6 @@ import pandas as pd
 
 Node = namedtuple('Node', ['label', 'children'])
 
-
-
 class DecisionTree():
 
     def train(self, dataset, predictiveAttributes, targetLabel, varyTree = False):
