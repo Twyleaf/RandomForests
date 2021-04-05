@@ -32,15 +32,15 @@
 	</li>
 	<li>
 		<h3>Bootstrap size</h3>
-		<p>Tamanho do bootstrap</p>
+		<p>Tamanho do bootstrap. Default: Tamanho do dataset</p>
 	</li>
 	<li>
 		<h3>Should print tree</h3>
-		<p>Opção para output das árvores geradas.</p>
+		<p>Opção para output das árvores geradas. Default: No</p>
 	</li>
 	<li>
 		<h3>Vary tree</h3>
-		<p>Opção para utilização de mecanismo de amostragem. Quando utilizado, o valor m é a raiz quadrada do número total de atributos</p>
+		<p>Opção para utilização de mecanismo de amostragem. Quando utilizado, o valor m é a raiz quadrada do número total de atributos. Default: Yes</p>
 	</li>
 	<li>
 		<h3>K value</h3>
