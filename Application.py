@@ -25,18 +25,20 @@ def do_action(action):
     print('Number of trees: ', end='')
     number_of_trees = int(input())
     
-    print('Bootstrap size: ', end='')
-    bootstrap_size = int(input())
+    print('Bootstrap size (Default: Dataset size):', end='')
+    bootstrap_size = input()
 
     should_print_tree = ''
     while(should_print_tree != 'y' and should_print_tree != 'n'):
-        print('Should print tree (y/n): ', end='')
+        print('Should print tree (y/n, default: n): ', end='')
         should_print_tree = input()
+        should_print_tree = 'n' if should_print_tree == '' else should_print_tree
 
     vary_tree = ''
     while(vary_tree != 'y' and vary_tree != 'n'):
-        print('Vary tree (y/n): ', end='')
+        print('Vary tree (y/n, default: y): ', end='')
         vary_tree = input()
+        vary_tree = 'y' if vary_tree == '' else vary_tree
         
     print('Running...')
 
@@ -44,7 +46,7 @@ def do_action(action):
     RFDataset = pd.read_csv(training_dataset, sep=sep, engine='python')
     RFPredictive = list(RFDataset.columns)
     RFPredictive.remove(target_column_name)
-    listOfTrees = RF.train(RFDataset, RFPredictive, target_column_name, number_of_trees, bootstrap_size, (True if should_print_tree=='y' else False),(True if vary_tree=='y' else False))
+    listOfTrees = RF.train(RFDataset, RFPredictive, target_column_name, number_of_trees, len(RFDataset) if bootstrap_size == '' else int(bootstrap_size), (True if should_print_tree=='y' else False),(True if vary_tree=='y' else False))
 
     if(action == 'Classify'):
         RFDatasetTest = pd.read_csv(test_dataset, sep=sep, engine='python')
@@ -53,7 +55,7 @@ def do_action(action):
 
     if(action == 'Validate'):
         folds = kFoldSplit(k_value, RFDataset, target_column_name)
-        RF.crossValidation(k_value, folds, RFPredictive, target_column_name, number_of_trees, bootstrap_size, (True if should_print_tree=='y' else False),(True if vary_tree=='y' else False))
+        RF.crossValidation(k_value, folds, RFPredictive, target_column_name, number_of_trees, len(RFDataset) if bootstrap_size == '' else int(bootstrap_size), (True if should_print_tree=='y' else False),(True if vary_tree=='y' else False))
 
 
 if(len(sys.argv) != 2):
@@ -64,20 +66,23 @@ if(len(sys.argv) != 2):
     print('\t- Validate')
     exit()
 
-if(sys.argv[1] == 'Training'):
-    print('Ação selecionada: Treino')
-    do_action('Training')
-else:
-    if(sys.argv[1] == 'Classify'):
-        print('Ação selecionada: Classificar')
-        do_action('Classify')
+try:
+    if(sys.argv[1] == 'Training'):
+        print('Selected option: Treino')
+        do_action('Training')
     else:
-        if(sys.argv[1] == 'Validate'):
-            print('Ação Selecionada: Validação')
-            do_action('Validate')
+        if(sys.argv[1] == 'Classify'):
+            print('Selected option: Classificar')
+            do_action('Classify')
         else:
-            print('Ação Inválida!')
-            print('Possible actions:')
-            print('\t- Training')
-            print('\t- Classify')
-            print('\t- Validate')
+            if(sys.argv[1] == 'Validate'):
+                print('Selected option: Validação')
+                do_action('Validate')
+            else:
+                print('Ação Inválida!')
+                print('Possible actions:')
+                print('\t- Training')
+                print('\t- Classify')
+                print('\t- Validate')
+except:
+    print('An error occurred during execution. Check the input information.')
