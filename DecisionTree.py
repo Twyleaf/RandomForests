@@ -10,9 +10,11 @@ class DecisionTree():
     def train(self, dataset, predictiveAttributes, targetLabel, isNumeric, varyTree = False):
         if self.datasetHasOnlyOneClass(dataset, targetLabel):# Se o dataset tiver apenas uma classe, criar um nó folha que prediz essa classe
             node = self.newNode(dataset[targetLabel].iloc[0])
+            self.treeRoot = node
             return node
         if len(predictiveAttributes) == 0:# Se atributos estiver vazio, retornar nodo com classe mais frequente
             node = self.newNode(self.getMostFrequentClass(dataset, targetLabel))
+            self.treeRoot = node
             return node
         if varyTree: #testa se a árvore deve variar de execução a execução
             mAttibutes = random.sample(predictiveAttributes, math.ceil(math.sqrt(len(predictiveAttributes))))
