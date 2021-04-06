@@ -33,7 +33,7 @@ class DecisionTree():
             else:
                 # Criar um novo nodo e fazer uma chamada recursiva com o dataset dividido
                 self.addChildren(father = node,
-                                child = self.train(newDataset, predictiveAttributes.copy(), targetLabel, isNumeric),
+                                child = self.train(newDataset, predictiveAttributes.copy(), targetLabel, isNumeric, varyTree),
                                 transition = distinctValue)
         
         self.treeRoot = node

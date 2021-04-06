@@ -53,7 +53,7 @@ class RandomForest():
         for treeIndex in range(numberOfTrees):
             bootstrap = self.getBootstrap(dataset, bootstrapSize)
             decisionTree = DecisionTree()
-            decisionTree.train(dataset, predictiveAttributes.copy(), targetLabel, isNumeric, varyTree)
+            decisionTree.train(bootstrap, predictiveAttributes.copy(), targetLabel, isNumeric, varyTree)
             listOfTrees.append(decisionTree)
 
             if(shouldPrintTree):
