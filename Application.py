@@ -61,7 +61,7 @@ def do_action(action):
 
     if(action == 'Validate'):
         folds = kFoldSplit(k_value, RFDataset, target_column_name)
-        RF.crossValidation(k_value, folds, RFPredictive, target_column_name, number_of_trees, len(RFDataset) if bootstrap_size == '' else int(bootstrap_size), (True if should_print_tree=='y' else False),(True if vary_tree=='y' else False))
+        RF.crossValidation(k_value, folds, RFPredictive, target_column_name, number_of_trees, len(RFDataset) if bootstrap_size == '' else int(bootstrap_size), (True if should_print_tree=='y' else False), (True if vary_tree=='y' else False), (True if is_numeric=='y' else False))
 
 
 if(len(sys.argv) != 2):

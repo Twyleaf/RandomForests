@@ -97,7 +97,7 @@ class RandomForest():
 
         return 1 - err
 
-    def crossValidation(self, k, folds, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree):
+    def crossValidation(self, k, folds, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree, isNumeric):
         for i in range(k): # Cada fold deverá ser de teste
             testingDataset = folds[i]
             trainingFolds = []
@@ -108,7 +108,7 @@ class RandomForest():
 
             trainingDataset = combineDatasets(trainingFolds)
             
-            listOfTrees = self.train(trainingDataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree)
+            listOfTrees = self.train(trainingDataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree, isNumeric)
             listOfPredictions = self.predict(listOfTrees, testingDataset)
             self.voting(listOfPredictions, testingDataset)
             print("ACCURACY #" + str(i + 1) + " is " + str(self.calculateAccuracy(targetLabel, testingDataset)))
