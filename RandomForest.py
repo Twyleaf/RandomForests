@@ -1,6 +1,8 @@
 import pandas as pd
 import random
 from DecisionTree import DecisionTree
+from statistics import mean
+from statistics import stdev
 
 def combineDatasets(datasets):
     for i, slice in enumerate(datasets):
@@ -98,6 +100,7 @@ class RandomForest():
         return 1 - err
 
     def crossValidation(self, k, folds, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree, isNumeric):
+        accuracies = []
         for i in range(k): # Cada fold deverá ser de teste
             testingDataset = folds[i]
             trainingFolds = []
@@ -111,7 +114,10 @@ class RandomForest():
             listOfTrees = self.train(trainingDataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree, isNumeric)
             listOfPredictions = self.predict(listOfTrees, testingDataset)
             self.voting(listOfPredictions, testingDataset)
-            print("ACCURACY #" + str(i + 1) + " is " + str(self.calculateAccuracy(targetLabel, testingDataset)))
+            accuracy = self.calculateAccuracy(targetLabel, testingDataset)
+            accuracies.append(accuracy)
+            print("ACCURACY #" + str(i + 1) + " is " + str(accuracy))
+        print("median accuracy: " + str(mean(accuracies)) + "\nstandard deviation: " + str(stdev(accuracies)))
 
 
 """
