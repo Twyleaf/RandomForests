@@ -7,7 +7,7 @@ Node = namedtuple('Node', ['label', 'children'])
 
 class DecisionTree():
 
-    def train(self, dataset, predictiveAttributes, targetLabel, varyTree = False):
+    def train(self, dataset, predictiveAttributes, targetLabel, isNumeric, varyTree = False):
         if self.datasetHasOnlyOneClass(dataset, targetLabel):# Se o dataset tiver apenas uma classe, criar um nó folha que prediz essa classe
             node = self.newNode(dataset[targetLabel].iloc[0])
             return node
@@ -23,7 +23,7 @@ class DecisionTree():
         chosenAttribute = self.chooseAttribute(dataset, mAttibutes, targetLabel)# Escolher atributo com o método de ganho de informação
         node = self.newNode(chosenAttribute)# Criar um nodo com esse atributo
         predictiveAttributes.remove(chosenAttribute)# Remover atributo escolhido da lista
-        subsets = self.groupDatasetByAttributeValues(dataset, chosenAttribute)# Divide o dataset de acordo com cada valor diferente do atributo
+        subsets = self.groupDatasetByAttributeValues(dataset, chosenAttribute, isNumeric)# Divide o dataset de acordo com cada valor diferente do atributo
         for subset in subsets:
             distinctValue = subset[0] # O valor distinto usado na divisão do dataset
             newDataset = subset[1] # O dataset dividido
@@ -33,7 +33,7 @@ class DecisionTree():
             else:
                 # Criar um novo nodo e fazer uma chamada recursiva com o dataset dividido
                 self.addChildren(father = node,
-                                child = self.train(newDataset, predictiveAttributes.copy(), targetLabel),
+                                child = self.train(newDataset, predictiveAttributes.copy(), targetLabel, isNumeric),
                                 transition = distinctValue)
         
         self.treeRoot = node
@@ -120,8 +120,8 @@ class DecisionTree():
 
         return chosenAttribute
 
-    def groupDatasetByAttributeValues(self, dataset, chosenAttribute):
-        if pd.api.types.is_numeric_dtype(dataset[chosenAttribute]):# testa se o atrubuto é numérico
+    def groupDatasetByAttributeValues(self, dataset, chosenAttribute, isNumeric):
+        if isNumeric: # Se dataset for numérico
             mean = dataset[chosenAttribute].mean() # se for numérico, calcula a média dos valores
             subsets = []
 
@@ -135,8 +135,7 @@ class DecisionTree():
                 subsets.append((">=" + str(mean), gte))
 
             return subsets
-        else:# para atributos não numéricos
-            # dá erro com o dataset dos votos
+        else: # Caso dataset for categórico
             s = dataset[chosenAttribute].unique() # Pega os valores únicos de cada coluna
             attributeValues = s.tolist()
             subsets = [] # Salva lista de tuplas: (valor, dataset)
@@ -196,35 +195,13 @@ class DecisionTree():
             prediction.append(node.label)
 
 
-"""
-DT0 = DecisionTree()
-DT0Dataset = pd.read_csv("data/dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
-DT0Predictive = list(DT0Dataset.columns)
-DT0Predictive.remove("Joga")
-DT0Target = "Joga"
 
-DT0.train(DT0Dataset, DT0Predictive, DT0Target,True)
-DT0.printTree()
-prediction = DT0.predictFromTrainingSet(DT0Dataset)
-print(prediction)
-"""
-"""
-DT1 = DecisionTree()
-DT1Dataset = pd.read_csv("data\house-votes-84.tsv", sep='\t')
-DT1Predictive = list(DT1Dataset.columns)
-DT1Predictive.remove("target")
-DT1Target = "target"
+# DT0 = DecisionTree()
+# DT0Dataset = pd.read_csv("data/dadosBenchmark_validacaoAlgoritmoAD.csv", sep=';')
+# DT0Predictive = list(DT0Dataset.columns)
+# DT0Predictive.remove("Joga")
+# DT0Target = "Joga"
 
-a = DT1.chooseAttribute(DT1Dataset, DT1Predictive, DT1Target)
-print(a)
-"""
-"""
-DT2 = DecisionTree()
-DT2Dataset = pd.read_csv("data/wine-recognition.tsv", sep='\t')
-DT2Predictive = list(DT2Dataset.columns)
-DT2Predictive.remove("target")
-DT2Target = "target"
+# DT0.train(DT0Dataset, DT0Predictive, DT0Target, False, True)
+# DT0.printTree()
 
-DT2.printNode(DT2.train(DT2Dataset, DT2Predictive, DT2Target))
-##print(a)
-"""

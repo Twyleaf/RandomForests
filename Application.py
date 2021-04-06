@@ -16,6 +16,12 @@ def do_action(action):
         print('Path to test dataset: ', end='')
         test_dataset = input()
 
+    is_numeric = ''
+    while(is_numeric != 'y' and is_numeric != 'n'):
+        print('Is data type numeric (y/n): ', end='')
+        is_numeric = input()
+        is_numeric = 'n' if is_numeric == '' else is_numeric
+
     print('Dataset separator: ', end='')
     sep = input()
 
@@ -46,7 +52,7 @@ def do_action(action):
     RFDataset = pd.read_csv(training_dataset, sep=sep, engine='python')
     RFPredictive = list(RFDataset.columns)
     RFPredictive.remove(target_column_name)
-    listOfTrees = RF.train(RFDataset, RFPredictive, target_column_name, number_of_trees, len(RFDataset) if bootstrap_size == '' else int(bootstrap_size), (True if should_print_tree=='y' else False),(True if vary_tree=='y' else False))
+    listOfTrees = RF.train(RFDataset, RFPredictive, target_column_name, number_of_trees, len(RFDataset) if bootstrap_size == '' else int(bootstrap_size), (True if should_print_tree=='y' else False), (True if vary_tree=='y' else False), (True if is_numeric=='y' else False))
 
     if(action == 'Classify'):
         RFDatasetTest = pd.read_csv(test_dataset, sep=sep, engine='python')

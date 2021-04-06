@@ -48,12 +48,12 @@ def kFoldSplit(k, dataset, targetLabel):
 
 class RandomForest():
 
-    def train(self, dataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree):
+    def train(self, dataset, predictiveAttributes, targetLabel, numberOfTrees, bootstrapSize, shouldPrintTree, varyTree, isNumeric):
         listOfTrees = [] #inicializa lista de árvores
         for treeIndex in range(numberOfTrees):
             bootstrap = self.getBootstrap(dataset, bootstrapSize)
             decisionTree = DecisionTree()
-            decisionTree.train(dataset, predictiveAttributes.copy(), targetLabel, varyTree)
+            decisionTree.train(dataset, predictiveAttributes.copy(), targetLabel, isNumeric, varyTree)
             listOfTrees.append(decisionTree)
 
             if(shouldPrintTree):
